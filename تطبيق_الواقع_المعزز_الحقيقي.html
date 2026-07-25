@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>بطاقات الرياضيات - واقع معزز حقيقي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+<style>
+  html,body{margin:0; padding:0; overflow:hidden; font-family:'Tajawal',sans-serif; background:#0d1b2e;}
+  .arjs-loader{ display:flex; align-items:center; justify-content:center; }
+
+  #topBar{
+    position:fixed; top:0; right:0; left:0; z-index:20;
+    text-align:center; padding:10px 10px 6px;
+    background:linear-gradient(to bottom, rgba(13,27,46,0.92), transparent);
+    pointer-events:none;
+  }
+  #topBar h1{
+    font-family:'Baloo Bhaijaan 2'; color:#fff8ec; margin:0;
+    font-size:clamp(18px,5.5vw,26px); text-shadow:0 2px 0 rgba(0,0,0,0.4);
+  }
+  #topBar p{ color:#cfe3ee; font-size:12px; margin:4px 0 0; }
+
+  #hud{
+    position:fixed; bottom:0; right:0; left:0; z-index:20;
+    display:flex; justify-content:center; padding:16px 10px 26px;
+    background:linear-gradient(to top, rgba(13,27,46,0.92), transparent);
+    pointer-events:none;
+  }
+  #hudCard{
+    font-family:'Baloo Bhaijaan 2';
+    font-size:clamp(22px,7vw,34px);
+    color:#152238;
+    background:linear-gradient(160deg,#fff2cf,#ffc857);
+    border:3px solid #c98f1f;
+    padding:8px 26px; border-radius:20px;
+    box-shadow:0 8px 0 #c98f1f, 0 12px 18px rgba(0,0,0,0.35);
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s ease, background .2s ease, border-color .2s ease;
+  }
+  #hudCard.result{
+    background:linear-gradient(160deg,#e8fff9,#00c2a8);
+    border-color:#00816f;
+    box-shadow:0 8px 0 #00816f, 0 12px 18px rgba(0,0,0,0.35);
+  }
+  #hudCard.waiting{ font-size:clamp(14px,4vw,17px); padding:10px 20px; opacity:0.9;}
+
+  #legend{
+    position:fixed; top:64px; left:8px; z-index:20;
+    background:rgba(0,0,0,0.45); color:#fff8ec; font-size:10.5px;
+    padding:8px 10px; border-radius:10px; line-height:1.7; max-width:150px;
+  }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <h1>بطاقات الرياضيات AR</h1>
+  <p>وجّه الكاميرا نحو بطاقتي رقم وبطاقة عملية بينهما</p>
+</div>
+
+<div id="legend">
+  رمز البطاقة → القيمة<br>
+  0-9 → الأرقام<br>
+  10 → +<br>
+  11 → −<br>
+  12 → ×<br>
+  13 → ÷
+</div>
+
+<div id="hud"><div id="hudCard" class="waiting">📷 ابحث عن بطاقتين رقم وعملية بينهما</div></div>
+
+<a-scene embedded
+  arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
+  vr-mode-ui="enabled: false"
+  renderer="logarithmicDepthBuffer: true; precision: mediump;">
+
+  <!-- بطاقات الأرقام 0-9 : barcode value = الرقم نفسه -->
+  <a-marker type="barcode" value="0" emitevents="true" class="cardMarker" data-kind="num" data-val="0">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="0" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="1" emitevents="true" class="cardMarker" data-kind="num" data-val="1">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="1" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="2" emitevents="true" class="cardMarker" data-kind="num" data-val="2">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="2" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="3" emitevents="true" class="cardMarker" data-kind="num" data-val="3">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="3" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="4" emitevents="true" class="cardMarker" data-kind="num" data-val="4">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="4" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="5" emitevents="true" class="cardMarker" data-kind="num" data-val="5">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="5" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="6" emitevents="true" class="cardMarker" data-kind="num" data-val="6">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="6" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="7" emitevents="true" class="cardMarker" data-kind="num" data-val="7">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="7" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="8" emitevents="true" class="cardMarker" data-kind="num" data-val="8">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="8" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="9" emitevents="true" class="cardMarker" data-kind="num" data-val="9">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ffc857" opacity="0.85"></a-circle>
+      <a-text value="9" align="center" color="#152238" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+
+  <!-- بطاقات العمليات: 10=+  11=-  12=×  13=÷ -->
+  <a-marker type="barcode" value="10" emitevents="true" class="cardMarker" data-kind="op" data-val="+">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ff6b6b" opacity="0.85"></a-circle>
+      <a-text value="+" align="center" color="#fff8ec" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="11" emitevents="true" class="cardMarker" data-kind="op" data-val="-">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ff6b6b" opacity="0.85"></a-circle>
+      <a-text value="-" align="center" color="#fff8ec" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="12" emitevents="true" class="cardMarker" data-kind="op" data-val="×">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ff6b6b" opacity="0.85"></a-circle>
+      <a-text value="x" align="center" color="#fff8ec" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+  <a-marker type="barcode" value="13" emitevents="true" class="cardMarker" data-kind="op" data-val="÷">
+    <a-entity position="0 0.05 0" rotation="-90 0 0">
+      <a-circle radius="0.35" color="#ff6b6b" opacity="0.85"></a-circle>
+      <a-text value="/" align="center" color="#fff8ec" width="2.6" position="0 0 0.01"></a-text>
+    </a-entity>
+  </a-marker>
+
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+  const visible = new Map(); // key: element -> {kind, val, el}
+  const hud = document.getElementById('hudCard');
+
+  function beep(){
+    try{
+      const actx = new (window.AudioContext||window.webkitAudioContext)();
+      const o = actx.createOscillator(); const g = actx.createGain();
+      o.type='sine'; o.frequency.value=660;
+      g.gain.setValueAtTime(0.001, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.15, actx.currentTime+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime+0.35);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime+0.4);
+    }catch(e){}
+  }
+
+  function evaluate(){
+    const nums = [], ops = [];
+    visible.forEach(entry=>{
+      if(entry.kind==='num') nums.push(entry);
+      else ops.push(entry);
+    });
+
+    if(nums.length===2 && ops.length===1){
+      nums.sort((a,b)=> a.el.object3D.position.x - b.el.object3D.position.x);
+      const a = parseFloat(nums[0].val);
+      const b = parseFloat(nums[1].val);
+      const op = ops[0].val;
+      let res, text;
+      if(op==='+') res = a+b;
+      else if(op==='-') res = a-b;
+      else if(op==='×') res = a*b;
+      else if(op==='÷'){
+        if(b===0){ text = 'لا يمكن القسمة على صفر 🙈'; showResult(text); return; }
+        res = Math.round((a/b)*100)/100;
+      }
+      text = a+' '+op+' '+b+' = '+res;
+      showResult(text);
+    } else {
+      const need = [];
+      if(nums.length<2) need.push('رقمين');
+      if(ops.length<1) need.push('علامة عملية');
+      hud.className='waiting';
+      hud.textContent = '📷 أظهر '+need.join(' و ')+' أمام الكاميرا';
+    }
+  }
+
+  function showResult(text){
+    hud.className='result';
+    hud.textContent = text;
+    hud.style.transform='scale(0.6)';
+    requestAnimationFrame(()=>{ hud.style.transform='scale(1)'; });
+    beep();
+  }
+
+  document.querySelectorAll('.cardMarker').forEach(marker=>{
+    const kind = marker.dataset.kind;
+    const val = marker.dataset.val;
+    marker.addEventListener('markerFound', ()=>{
+      visible.set(marker, { kind, val, el: marker });
+      evaluate();
+    });
+    marker.addEventListener('markerLost', ()=>{
+      visible.delete(marker);
+      evaluate();
+    });
+  });
+</script>
+</body>
+</html>
