@@ -54,6 +54,21 @@
     padding:8px 10px; border-radius:10px; line-height:1.7; max-width:150px;
   }
 
+  /* AR.js يحسب حجم الفيديو افتراضيًا لوضع landscape، فيطلع صغير في النص على الموبايل (portrait).
+     نجبره يغطي كامل الشاشة بدل الحجم الأصلي المحسوب. */
+  video{
+    position:fixed !important;
+    top:0 !important; left:0 !important;
+    width:100vw !important; height:100vh !important;
+    object-fit:cover !important;
+    max-width:none !important; max-height:none !important;
+  }
+  .a-canvas{
+    position:fixed !important;
+    top:0 !important; left:0 !important;
+    width:100vw !important; height:100vh !important;
+  }
+
   /* شاشة تشخيص الأخطاء / متطلبات HTTPS والكاميرا */
   #diag{
     position:fixed; inset:0; z-index:999; background:#0d1b2e;
@@ -215,25 +230,7 @@
       showDiag('<div>⚠️ <b>المتصفح لا يدعم الوصول للكاميرا</b><br>جرّب Chrome أو Safari محدّث.</div>');
       return;
     }
-    // ملاحظة: ما نفتح الكاميرا هنا يدويًا — نتركها كاملة لـ AR.js نفسه
-    // لتفادي أي تعارض/سباق بين طلبين لفتح الكاميرا بنفس الوقت.
-
-    // مراقبة: لو AR.js ما نجح يضيف عنصر الفيديو خلال 6 ثواني، نطلع تحذير
-    setTimeout(()=>{
-      const vid = document.querySelector('video');
-      if(!vid){
-        showDiag(
-          '<div>⚠️ <b>AR.js ما قدر ينشئ عنصر الفيديو</b><br>' +
-          'غالبًا مشكلة توافق بين إصدار A-Frame و AR.js، أو الملف تحمّل بترتيب خاطئ.<br><br>' +
-          'جرّب تفتح الصفحة بإضافة <code>?debug=1</code> على آخر الرابط عشان تشوف واجهة تشخيص AR.js نفسها.</div>'
-        );
-      } else if(vid.readyState < 2){
-        showDiag(
-          '<div>⚠️ <b>عنصر الفيديو موجود لكن ما يستقبل صورة</b><br>' +
-          'جرّب تغلق أي تطبيق ثاني يستخدم الكاميرا، أو أعد تحميل الصفحة، أو جرّب متصفح Chrome لو تستخدم متصفح ثاني (مثل متصفح فيسبوك/انستقرام المدمج).</div>'
-        );
-      }
-    }, 6000);
+    // نترك فتح الكاميرا بالكامل لـ AR.js، بدون أي تغطية تلقائية للشاشة قد تخفي فيديو شغّال فعليًا.
   })();
 
   window.addEventListener('error', function(e){
