@@ -85,6 +85,13 @@
 <!-- شاشة تشخيص تظهر فورًا لو في مشكلة بيئة قبل حتى تحميل AR.js -->
 <div id="diag" style="display:none"></div>
 
+<div id="startOverlay" style="position:fixed;inset:0;z-index:500;background:#0d1b2e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <div style="font-family:'Baloo Bhaijaan 2';color:#fff8ec;font-size:20px;">بطاقات الرياضيات AR</div>
+  <button id="startBtn" style="font-family:'Baloo Bhaijaan 2';font-size:20px;color:#152238;background:linear-gradient(160deg,#fff2cf,#ffc857);border:3px solid #c98f1f;padding:14px 40px;border-radius:20px;box-shadow:0 6px 0 #c98f1f;">
+    📷 ابدأ الكاميرا
+  </button>
+</div>
+
 <div id="topBar">
   <h1>بطاقات الرياضيات AR</h1>
   <p>وجّه الكاميرا نحو بطاقتي رقم وبطاقة عملية بينهما</p>
@@ -107,12 +114,13 @@
   renderer="logarithmicDepthBuffer: true; precision: mediump;">
 
   <script>
-    (function(){
+    document.getElementById('startBtn').addEventListener('click', function(){
       var isDebug = new URLSearchParams(location.search).get('debug') === '1';
       document.getElementById('scene').setAttribute('arjs',
         'sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: ' + isDebug + ';'
       );
-    })();
+      document.getElementById('startOverlay').style.display = 'none';
+    });
   </script>
 
   <!-- بطاقات الأرقام 0-9 : barcode value = الرقم نفسه -->
