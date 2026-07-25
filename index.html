@@ -6,10 +6,9 @@
 <title>بطاقات الرياضيات - واقع معزز حقيقي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.6.0/dist/aframe-master.min.js"></script>
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"
-  onerror="(function(){try{var x=new XMLHttpRequest();x.open('GET','https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@master/aframe/build/aframe-ar.js',false);x.send();(0,eval)(x.responseText);}catch(e){document.title='AR.js failed to load: '+e;}})();">
-</script>
+<!-- تحميل موثوق وثابت الإصدار بدل raw.githack + sync-XHR fallback القديم -->
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
 <style>
   html,body{margin:0; padding:0; overflow:hidden; font-family:'Tajawal',sans-serif; background:#0d1b2e;}
   .arjs-loader{ display:flex; align-items:center; justify-content:center; }
@@ -54,9 +53,22 @@
     background:rgba(0,0,0,0.45); color:#fff8ec; font-size:10.5px;
     padding:8px 10px; border-radius:10px; line-height:1.7; max-width:150px;
   }
+
+  /* شاشة تشخيص الأخطاء / متطلبات HTTPS والكاميرا */
+  #diag{
+    position:fixed; inset:0; z-index:999; background:#0d1b2e;
+    color:#fff8ec; font-family:'Tajawal',sans-serif; font-size:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:24px; line-height:1.9; direction:rtl;
+  }
+  #diag b{ color:#ffc857; }
+  #diag code{ background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; direction:ltr; display:inline-block; }
 </style>
 </head>
 <body>
+
+<!-- شاشة تشخيص تظهر فورًا لو في مشكلة بيئة قبل حتى تحميل AR.js -->
+<div id="diag" style="display:none"></div>
 
 <div id="topBar">
   <h1>بطاقات الرياضيات AR</h1>
@@ -171,6 +183,47 @@
 </a-scene>
 
 <script>
+  // ---- شاشة تشخيص: تتحقق من الشروط الأساسية قبل ما نلوم الكود ----
+  function showDiag(html){
+    const d = document.getElementById('diag');
+    d.style.display = 'flex';
+    d.innerHTML = html;
+  }
+
+  (function envCheck(){
+    const isSecure = window.isSecureContext; // true لو https أو localhost
+    const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+    if(!isSecure){
+      showDiag(
+        '<div>⚠️ <b>الصفحة غير آمنة (ليست HTTPS)</b><br>' +
+        'متصفح الموبايل يمنع الكاميرا على أي رابط لا يبدأ بـ <code>https://</code> (ما عدا localhost).<br><br>' +
+        'ارفع الملف على استضافة تدعم HTTPS تلقائيًا مثل GitHub Pages أو Netlify أو Vercel، ثم افتح الرابط من هناك.</div>'
+      );
+      return;
+    }
+    if(!hasMediaDevices){
+      showDiag('<div>⚠️ <b>المتصفح لا يدعم الوصول للكاميرا</b><br>جرّب Chrome أو Safari محدّث.</div>');
+      return;
+    }
+    // اطلب إذن الكاميرا يدويًا أول شي عشان نعرف بالضبط وين تعلق المشكلة
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream=>{
+        // الإذن مُنح — أوقف هذا الـ stream التجريبي وخلي AR.js يفتح الكاميرا بنفسه
+        stream.getTracks().forEach(t=>t.stop());
+      })
+      .catch(err=>{
+        showDiag(
+          '<div>⚠️ <b>تعذّر فتح الكاميرا</b><br>' +
+          'السبب: <code>' + (err.name||'') + '</code><br><br>' +
+          (err.name==='NotAllowedError'
+            ? 'رفضت الصفحة إذن الكاميرا. اذهب لإعدادات الموقع في المتصفح وفعّل إذن الكاميرا يدويًا، ثم أعد تحميل الصفحة.'
+            : 'تأكد إن الكاميرا مو مستخدمة من تطبيق ثاني، وإن الجهاز فيه كاميرا خلفية.') +
+          '</div>'
+        );
+      });
+  })();
+
   window.addEventListener('error', function(e){
     const box = document.createElement('div');
     box.style.cssText = 'position:fixed;top:100px;right:8px;left:8px;z-index:999;background:#b83e3e;color:#fff;font-size:11px;padding:8px;border-radius:8px;direction:ltr;text-align:left;';
