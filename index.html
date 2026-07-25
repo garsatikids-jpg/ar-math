@@ -6,8 +6,8 @@
 <title>بطاقات الرياضيات - واقع معزز حقيقي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- تحميل موثوق وثابت الإصدار بدل raw.githack + sync-XHR fallback القديم -->
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<!-- مهم: AR.js 3.4.x متوافقة مع A-Frame 1.2.0 وليس مع الإصدارات الأحدث (1.4.x تكسر خلفية الفيديو) -->
+<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
 <style>
   html,body{margin:0; padding:0; overflow:hidden; font-family:'Tajawal',sans-serif; background:#0d1b2e;}
@@ -87,9 +87,18 @@
 <div id="hud"><div id="hudCard" class="waiting">📷 ابحث عن بطاقتين رقم وعملية بينهما</div></div>
 
 <a-scene embedded
-  arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
+  id="scene"
   vr-mode-ui="enabled: false"
   renderer="logarithmicDepthBuffer: true; precision: mediump;">
+
+  <script>
+    (function(){
+      var isDebug = new URLSearchParams(location.search).get('debug') === '1';
+      document.getElementById('scene').setAttribute('arjs',
+        'sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: ' + isDebug + ';'
+      );
+    })();
+  </script>
 
   <!-- بطاقات الأرقام 0-9 : barcode value = الرقم نفسه -->
   <a-marker type="barcode" value="0" emitevents="true" class="cardMarker" data-kind="num" data-val="0">
@@ -206,22 +215,25 @@
       showDiag('<div>⚠️ <b>المتصفح لا يدعم الوصول للكاميرا</b><br>جرّب Chrome أو Safari محدّث.</div>');
       return;
     }
-    // اطلب إذن الكاميرا يدويًا أول شي عشان نعرف بالضبط وين تعلق المشكلة
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream=>{
-        // الإذن مُنح — أوقف هذا الـ stream التجريبي وخلي AR.js يفتح الكاميرا بنفسه
-        stream.getTracks().forEach(t=>t.stop());
-      })
-      .catch(err=>{
+    // ملاحظة: ما نفتح الكاميرا هنا يدويًا — نتركها كاملة لـ AR.js نفسه
+    // لتفادي أي تعارض/سباق بين طلبين لفتح الكاميرا بنفس الوقت.
+
+    // مراقبة: لو AR.js ما نجح يضيف عنصر الفيديو خلال 6 ثواني، نطلع تحذير
+    setTimeout(()=>{
+      const vid = document.querySelector('video');
+      if(!vid){
         showDiag(
-          '<div>⚠️ <b>تعذّر فتح الكاميرا</b><br>' +
-          'السبب: <code>' + (err.name||'') + '</code><br><br>' +
-          (err.name==='NotAllowedError'
-            ? 'رفضت الصفحة إذن الكاميرا. اذهب لإعدادات الموقع في المتصفح وفعّل إذن الكاميرا يدويًا، ثم أعد تحميل الصفحة.'
-            : 'تأكد إن الكاميرا مو مستخدمة من تطبيق ثاني، وإن الجهاز فيه كاميرا خلفية.') +
-          '</div>'
+          '<div>⚠️ <b>AR.js ما قدر ينشئ عنصر الفيديو</b><br>' +
+          'غالبًا مشكلة توافق بين إصدار A-Frame و AR.js، أو الملف تحمّل بترتيب خاطئ.<br><br>' +
+          'جرّب تفتح الصفحة بإضافة <code>?debug=1</code> على آخر الرابط عشان تشوف واجهة تشخيص AR.js نفسها.</div>'
         );
-      });
+      } else if(vid.readyState < 2){
+        showDiag(
+          '<div>⚠️ <b>عنصر الفيديو موجود لكن ما يستقبل صورة</b><br>' +
+          'جرّب تغلق أي تطبيق ثاني يستخدم الكاميرا، أو أعد تحميل الصفحة، أو جرّب متصفح Chrome لو تستخدم متصفح ثاني (مثل متصفح فيسبوك/انستقرام المدمج).</div>'
+        );
+      }
+    }, 6000);
   })();
 
   window.addEventListener('error', function(e){
